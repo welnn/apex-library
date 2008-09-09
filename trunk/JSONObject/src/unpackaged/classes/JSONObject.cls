@@ -1350,12 +1350,17 @@ public class JSONTokener {
         string c;
         string sb = '';
         for (;;) {
-            c = next();
+            c = next();system.debug(c);
             //switch (c) {
             if ( c == null || c == '\n' ||  c == '\r') { 
                 throw new JSONException('Unterminated string');
     		}
             /*
+    		if (  c == '/' ) {  
+    			c = next();
+    			if ( c == 'n') 	{ sb += '\n'; continue; }
+    		}
+ 
             if (  c == '/' ) { 
                 c = next();
                 switch (c) {
@@ -1384,16 +1389,15 @@ public class JSONTokener {
                     sb.append(c);
                 }
                 break;
-                */
-          //  default:
-                if (c == quote) {
-                	 // system.debug( 'nextString returns :'+sb); 
-                    return sb;
-                }
-                sb = sb + c;
-            //}
+            */
+    
+            if (c == quote) {
+            	 // system.debug( 'nextString returns :'+sb); 
+                return sb;
+            }
+            sb = sb + c;
+            
         }
-        //system.debug( 'nextString returns : empty');
         return '';
     }
 
@@ -1581,17 +1585,6 @@ public class JSONTokener {
     }
  
     /*
-     * Make a JSONException to signal a syntax error.
-     *
-     * @param message The error message.
-     * @return  A JSONException object, suitable for throwing
-    
-    public JSONException  (String message) {
-        return new JSONException(message + toString());
-    } 
-	*/
-
-    /*
      * Make a printable string of this JSONTokener.
      *
      * @return ' at character [this.index]'   
@@ -1656,6 +1649,12 @@ public class JSONTokener {
 	 * TEST Methods to achieve required code coverage
 	 *   many of these could be improved by using assert() instead of debug()
 	 */
+	public static  testmethod void test_tokener_nl() {
+		//add a new line by inserting /n 
+		JsonObject.JsonTokener tkr = new  JsonTokener(
+		'quoted string/\nfoo"');
+		system.debug( 'next string is >'+tkr.nextString('"') );
+	} 
 	public static  testmethod void test_tokener() { 
 		JsonObject.JsonTokener tkr = new  JsonTokener('//ff \n{}');
 		tkr.nextClean();
@@ -1669,13 +1668,16 @@ public class JSONTokener {
 			system.assert( ex.getMessage() == 'Unclosed comment');
 		} 
 	}
-	public static  testmethod void test_parsing() { 
+	public static  testmethod void test_parsing() { 	JSONObject jj; JsonObject.JsonTokener tkr;
 		string simple = '{"translatedText":  "Ciao mondo"  }';
+		string bool_simple = '{"responseBoolean"  :   true }';
 		string nsimple = '{"responseData"  :   {"translatedText":  "Ciao mondo"  }, "responseDetails": null, "responseStatus": 200 }';
-		JsonObject.JsonTokener tkr = new  JsonTokener(simple);
-	 	JSONObject jj = new JSONObject( tkr);
-	 	system.debug( jj );
 	
+		// three methods of constructing an object
+		system.debug( jsonobject.instance( bool_simple	 ) );
+		system.debug( new jsonobject( 	bool_simple ) );	
+	 	system.debug( new JSONObject( new  JsonTokener(simple) ) );	
+		
 		tkr = new  JsonTokener(nsimple);
 		system.debug( tkr.more() );	
 		system.debug( tkr.next(1) );	
@@ -1685,7 +1687,6 @@ public class JSONTokener {
 			system.debug( ' expected >'+ex.getMessage() + '<' );
 			system.assert( ex.getMessage() == 'Ending position out of bounds: 10002');
 		} 
-		
 		
 		system.debug( tkr.next('r') );	
 		
@@ -1732,9 +1733,6 @@ public class JSONTokener {
 		system.debug( jj.getValue('responseBoolean') );
 		system.debug( jj.optBoolean('responseBoolean') );
 		
-		// two methods of constructing an object
-		system.debug( jsonobject.instance( '{"responseBoolean"  :   true }' ) );
-		system.debug( new jsonobject( '{"responseBoolean"  :   true }' ) );
 		
 		try { 
 		system.debug ( new JSONObject ( new JSONTokener( 'sdfsdf' ) ) ); 
