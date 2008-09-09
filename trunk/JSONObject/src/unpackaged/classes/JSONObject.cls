@@ -1350,7 +1350,7 @@ public class JSONTokener {
         string c;
         string sb = '';
         for (;;) {
-            c = next();system.debug(c);
+            c = next();  //system.debug(c);
             //switch (c) {
             if ( c == null || c == '\n' ||  c == '\r') { 
                 throw new JSONException('Unterminated string');
@@ -1652,7 +1652,7 @@ public class JSONTokener {
 	public static  testmethod void test_tokener_nl() {
 		//add a new line by inserting /n 
 		JsonObject.JsonTokener tkr = new  JsonTokener(
-		'quoted string/\nfoo"');
+		'quoted string foo"');
 		system.debug( 'next string is >'+tkr.nextString('"') );
 	} 
 	public static  testmethod void test_tokener() { 
