@@ -77,10 +77,12 @@ SOFTWARE.
  * @version 3
  */ 
  
-	/* Sept 2008, rhess
+	/* 
+	 * Sept 2008, rhess
 	 * begin simple port of this code to Force.com Apex Code
 	 * currently this code is only building Apex objects from JSON, 
 	 * not outputing JSON from Apex
+	 * Oct add valueToString	 
 	 */ 
 	public class value { 
 		/* apex object to store one of several different data types
@@ -98,9 +100,31 @@ SOFTWARE.
 		public JSONObject obj {get;set;}	
 		public list<value> values {get;set;}  // array
 		public boolean bool {get;set;} 	
-		// if all members are null, value == null	
-	} 
-
+		// if all members are null, value == null
+		// isNull()
+		/* 
+		 * value to string is used to output JSON for Google Visualization API
+		 */
+		public string valueToString() { 
+			if ( this.bool != null ) return (this.bool?'true':'false');
+			if ( this.str != null ) return '"'+this.str +'"';
+			if ( this.num != null ) return String.valueof(this.num); 
+			if ( this.values != null ) { 
+				string ret = '['; 
+				for ( value v:this.values) { 
+					//system.debug( v );
+					ret += v.valueToString() + ','; 
+				}
+				return ret.substring(0,ret.length()-1) + ']'; 
+			} 
+			if ( this.obj != null ) {
+				return this.obj.valueToString(); 	
+			} 
+			return 'null';	
+		}
+		
+	} // end of class value
+ 
     /* **
      * The map where the JSONObject's properties are kept.
      */
@@ -816,66 +840,6 @@ SOFTWARE.
         return sb.toString();
     }*/
 
-    /* **
-     * Remove a name and its value, if present.
-     * @param key The name to be removed.
-     * @return The value that was associated with the name,
-     * or null if there was no value.
-    
-    public Object remove(String key) {
-        return this.map.remove(key);
-    }
-    */
-    /* **
-     * Get an enumeration of the keys of the JSONObject.
-     * The keys will be sorted alphabetically.
-     *
-     * @return An iterator of the keys.
-    
-    public Iterator sortedKeys() {
-      return new TreeSet(this.map.keySet()).iterator();
-    }
-    */
-    /* **
-     * Throw an exception if the object is an NaN or infinite number.
-     * @param o The object to test.
-     * @ If o is a non-finite number.
-    
-    static void testValidity(Object o)  {
-        if (o != null) {
-            if (o instanceof Double) {
-                if (((Double)o).isInfinite() || ((Double)o).isNaN()) {
-                    throw new JSONException(
-                        'JSON does not allow non-finite numbers.');
-                }
-            } else if (o instanceof Float) {
-                if (((Float)o).isInfinite() || ((Float)o).isNaN()) {
-                    throw new JSONException(
-                        'JSON does not allow non-finite numbers.');
-                }
-            }
-        }
-    } */
-
-
-    /* **
-     * Produce a JSONArray containing the values of the members of this
-     * JSONObject.
-     * @param names A JSONArray containing a list of key strings. This
-     * determines the sequence of the values in the result.
-     * @return A JSONArray of values.
-     * @ If any of the values are non-finite numbers.
-   public JSONArray toJSONArray(JSONArray names)  {
-        if (names == null || names.length() == 0) {
-            return null;
-        }
-        JSONArray ja = new JSONArray();
-        for (int i = 0; i < names.length(); i += 1) {
-            ja.put(this.opt(names.getString(i)));
-        }
-        return ja;
-    }
-  */
     
     /* **
      * Make a JSON text of this JSONObject. For compactness, no whitespace
@@ -911,22 +875,7 @@ SOFTWARE.
     }   */
 
 
-    /* **
-     * Make a prettyprinted JSON text of this JSONObject.
-     * <p>
-     * Warning: This method assumes that the data structure is acyclical.
-     * @param indentFactor The number of spaces to add to each level of
-     *  indentation.
-     * @return a printable, displayable, portable, transmittable
-     *  representation of the object, beginning
-     *  with <code>{</code>&nbsp;<small>(left brace)</small> and ending
-     *  with <code>}</code>&nbsp;<small>(right brace)</small>.
-     * @ If the object contains an invalid number.
-    
-    public String toString(int indentFactor)  {
-        return toString(indentFactor, 0);
-    }
- */
+
 
     /* **
      * Make a prettyprinted JSON text of this JSONObject.
@@ -984,17 +933,13 @@ SOFTWARE.
         return sb.toString();
     }
  */
-
+	
     /* **
-     * Make a JSON text of an Object value. If the object has an
-     * value.toJSONString() method, then that method will be used to produce
-     * the JSON text. The method is required to produce a strictly
+     * valueToString 
+     * Make a JSON text of an Object value. The method is required to produce a strictly
      * conforming text. If the object does not contain a toJSONString
      * method (which is the most common case), then a text will be
-     * produced by other means. If the value is an array or Collection,
-     * then a JSONArray will be made from it and its toJSONString method
-     * will be called. If the value is a MAP, then a JSONObject will be made
-     * from it and its toJSONString method will be called. Otherwise, the
+     * produced by other means.  the
      * value's toString method will be called, and the result will be quoted.
      *
      * <p>
@@ -1005,135 +950,15 @@ SOFTWARE.
      *  with <code>{</code>&nbsp;<small>(left brace)</small> and ending
      *  with <code>}</code>&nbsp;<small>(right brace)</small>.
      * @ If the value is or contains an invalid number.
+     */
+	public String valueToString() {
+		string ret = '{';
+		for ( string key: this.keys() ) { 
+			ret += key + ': ' + this.getvalue(key).valueToString() + ',';
+		}
+		return ret.substring(0,ret.length()-1) + '}';	
+	}
    
-    static String valueToString(Object value)  {
-        if (value == null || value.equals(null)) {
-            return 'null';
-        }
-        if (value instanceof JSONString) {
-            Object o;
-            try {
-                o = ((JSONString)value).toJSONString();
-            } catch (Exception e) {
-                throw new JSONException(e);
-            }
-            if (o instanceof String) {
-                return (String)o;
-            }
-            throw new JSONException('Bad value from toJSONString: ' + o);
-        }
-        if (value instanceof Number) {
-            return numberToString((Number) value);
-        }
-        if (value instanceof Boolean || value instanceof JSONObject ||
-                value instanceof JSONArray) {
-            return value.toString();
-        }
-        if (value instanceof Map) {
-            return new JSONObject((Map)value).toString();
-        }
-        if (value instanceof Collection) {
-            return new JSONArray((Collection)value).toString();
-        }
-        if (value.getClass().isArray()) {
-            return new JSONArray(value).toString();
-        }
-        return quote(value.toString());
-    }
-
-
-    /* **
-     * Make a prettyprinted JSON text of an object value.
-     * <p>
-     * Warning: This method assumes that the data structure is acyclical.
-     * @param value The value to be serialized.
-     * @param indentFactor The number of spaces to add to each level of
-     *  indentation.
-     * @param indent The indentation of the top level.
-     * @return a printable, displayable, transmittable
-     *  representation of the object, beginning
-     *  with <code>{</code>&nbsp;<small>(left brace)</small> and ending
-     *  with <code>}</code>&nbsp;<small>(right brace)</small>.
-     * @ If the object contains an invalid number.
-     *
-     static String valueToString(Object value, int indentFactor, int indent)
-             {
-        if (value == null || value.equals(null)) {
-            return 'null';
-        }
-        try {
-            if (value instanceof JSONString) {
-                Object o = ((JSONString)value).toJSONString();
-                if (o instanceof String) {
-                    return (String)o;
-                }
-            }
-        } catch (Exception e) {
-           
-        }
-        if (value instanceof Number) {
-            return numberToString((Number) value);
-        }
-        if (value instanceof Boolean) {
-            return value.toString();
-        }
-        if (value instanceof JSONObject) {
-            return ((JSONObject)value).toString(indentFactor, indent);
-        }
-        if (value instanceof JSONArray) {
-            return ((JSONArray)value).toString(indentFactor, indent);
-        }
-        if (value instanceof Map) {
-            return new JSONObject((Map)value).toString(indentFactor, indent);
-        }
-        if (value instanceof Collection) {
-            return new JSONArray((Collection)value).toString(indentFactor, indent);
-        }
-        if (value.getClass().isArray()) {
-            return new JSONArray(value).toString(indentFactor, indent);
-        }
-        return quote(value.toString());
-    }
-  */
-
-     /* **
-      * Write the contents of the JSONObject as JSON text to a writer.
-      * For compactness, no whitespace is added.
-      * <p>
-      * Warning: This method assumes that the data structure is acyclical.
-      *
-      * @return The writer.
-      * @
-      
-     public Writer write(Writer writer)  {
-        try {
-            boolean  b = false;
-            Iterator keys = keys();
-            writer.write('{');
-
-            while (keys.hasNext()) {
-                if (b) {
-                    writer.write(',');
-                }
-                Object k = keys.next();
-                writer.write(quote(k.toString()));
-                writer.write(':');
-                Object v = this.map.get(k);
-                if (v instanceof JSONObject) {
-                    ((JSONObject)v).write(writer);
-                } else if (v instanceof JSONArray) {
-                    ((JSONArray)v).write(writer);
-                } else {
-                    writer.write(valueToString(v));
-                }
-                b = true;
-            }
-            writer.write('}');
-            return writer;
-        } catch (IOException e) {
-            throw new JSONException(e);
-        }
-     }*/
            
            
 public class JSONException extends Exception {}
@@ -1488,8 +1313,9 @@ public class JSONTokener {
         string b = c;
         while (c >= ' ' && '),:]}/\\\"[{;=#'.indexOf(c) < 0) {
             sb = sb + c;
+            //system.debug(sb);
             c = next();
-           // system.debug(c);
+            
         }
         back();
 
