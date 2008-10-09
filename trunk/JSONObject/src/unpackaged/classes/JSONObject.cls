@@ -91,12 +91,14 @@ SOFTWARE.
 		public value() { }
 		public value(boolean bb) { bool  = bb;}
 		public value(integer ii) {num=ii;} 
+		public value(Decimal ii) {dnum= ii;} 
 		public value(string st) {str=st;} 
 		public value( jsonobject oo) { obj = oo; }
 		public value( list<value> vary ) { values = vary; }
 		
 		public string str {get;set;}  
 		public integer num {get;set;} 
+		public double dnum {get;set;} 
 		public JSONObject obj {get;set;}	
 		public list<value> values {get;set;}  // array
 		public boolean bool {get;set;} 	
@@ -109,6 +111,7 @@ SOFTWARE.
 			if ( this.bool != null ) return (this.bool?'true':'false');
 			if ( this.str != null ) return '"'+this.str +'"';
 			if ( this.num != null ) return String.valueof(this.num); 
+			if ( this.dnum != null ) return String.valueof(this.dnum); 
 			if ( this.values != null ) { 
 				string ret = '['; 
 				for ( value v:this.values) { 
