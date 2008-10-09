@@ -25,13 +25,6 @@
   		legend: 'bottom',  // should be passed in via attribute
         smoothLine: true,  // should be passed in via attribute
         title: '{!title}'});
-   
-   /*
-   google.visualization.events.addListener(table, 'select', function() {
-    var row = chart.getSelection()[0].row;
-   	// alert('You selected ' + data.getValue(row, 0));
-    window.location.href = '/'+data.getValue(row, 0);
-   });*/
  
  }
 </script>
