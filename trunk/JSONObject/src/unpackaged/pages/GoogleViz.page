@@ -1,0 +1,18 @@
+<apex:page controller="GoogleVizController" 
+	sidebar="false" >
+
+<c:PieChart jsondata="{!pieChartData}" title="Open Opportunities" 
+	width="500" height="300" 
+	legend="label" 
+	backgroundColor="{stroke:'none', fill:'none', strokeSize: 0}" 
+	/>
+ <!--  	
+ 	backgroundColor="{stroke:'none', strokeSize: 0}" 
+ 	backgroundColor="'red'" 
+ 	-->
+
+ <c:LineChart jsondata="{!lineChartdata}" title="Opportunity Chart"  />
+ 	
+ <c:dataTable jsondata="{!data2}" barformat="2" barwidth="60" />
+
+</apex:page>
