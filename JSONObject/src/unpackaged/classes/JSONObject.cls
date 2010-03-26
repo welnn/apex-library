@@ -961,7 +961,7 @@ SOFTWARE.
 	public String valueToString() {
 		string ret = '{';
 		for ( string key: this.keys() ) { 
-			ret += key + ': ' + this.getvalue(key).valueToString() + ',';
+			ret += '"' + key + '": ' + this.getvalue(key).valueToString() + ',';
 		}
 		return ret.substring(0,ret.length()-1) + '}';	
 	}
@@ -1633,6 +1633,18 @@ public class JSONTokener {
 			system.debug( ' expected >'+ex.getMessage() + '<' );
 			system.assert( ex.getMessage() == 'JSONObject[notfound] not found.');
 		} 
+	}
+	
+	public static  testmethod void test_valueToString() {
+		JsonObject json = new JsonObject();
+		json.putOpt('foo', new JSONObject.value('bar'));
+		/*
+		Make sure that the JSON rendered by this class passes validation by parsers
+		from http://json.org/json2.js and http://www.jsonlint.com.
+		For example: 	{foo: "bar"} is invalid
+						{"foo": "bar"} is valid
+		*/
+		system.assertEquals( '{"foo": "bar"}', json.ValuetoString());
 	}
 	
 	// test that we can parse json containing a dobule 
