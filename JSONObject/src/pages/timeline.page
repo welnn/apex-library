@@ -1,0 +1,10 @@
+<apex:page controller="GoogleVizController" >
+
+<c:TimeLine jsondata="{!timelineData}" width="700px" height="250px" 
+	annotationsWidth="33" /> 
+
+<c:BarChart jsondata="{!LineChartData}" title="my title" />
+
+<c:ColumnChart jsondata="{!LineChartData}" title="my col chart" />
+
+</apex:page>
